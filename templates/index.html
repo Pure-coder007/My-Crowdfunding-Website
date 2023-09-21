@@ -21,10 +21,11 @@
         <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
         <!-- Template Stylesheet -->
-        <link href="css/style.css" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     </head>
 
     <body>
+        
         
             <div class="register-page ">
                 
@@ -63,21 +64,21 @@
             <!-- Nav Bar Start -->
             <div class="navbar navbar-expand-lg bg-dark navbar-dark">
                 <div class="container-fluid">
-                    <a href="index.html" class="navbar-brand">SpeedyHelp</a>
+                    <a href="{{ url_for('index') }}" class="navbar-brand">SpeedyHelp</a>
                     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav ml-auto">
-                            <a href="index.html" class="nav-item nav-link active">Home</a>
+                            <a href="{{ url_for('index') }}" class="nav-item nav-link active">Home</a>
                             
                             
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu">
-                                    <a href="sign-up.html" class="dropdown-item">Request Help</a>
-                                    <a href="donate.html" class="dropdown-item">Donate Now</a>
+                                    <a href="{{ url_for('register') }}" class="dropdown-item">Request Help</a>
+                                    
                                     
                                 </div>
                             </div>
@@ -90,34 +91,6 @@
             
             
             
-            
-            <!-- Sign up Form -->
-            
-            <div class="sign-up">
-                <h1>Create an account to save and continue</h1>
-                <div class="register">
-                    <h2>Register</h2>
-                        <form action="/register" method="POST">
-                            <p>Already have an account?   <a href="login.html">Sign In</a></p>
-                            <input type="text" name="first_name"  placeholder="First Name" required>
-                            <br>
-                            <br>
-                            <input type="text" name="last_name"  placeholder="Last Name" required>
-                            <br>
-                            <br>
-                            <input type="email" name="email" id="email" placeholder="Email Address" required>
-                            <br>
-                            <br>
-                            <input type="email" name="confirm_email" id="email" placeholder="Confirm Email Address" required>
-                            <br>
-                            <br>
-                            <input type="password" name="password" id="password" placeholder="Password" required>
-                            <br>
-                            <br>
-                            <button>Submit</button>
-                        </form>
-                </div>
-            </div>
 
             <!-- JavaScript Libraries -->
             <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

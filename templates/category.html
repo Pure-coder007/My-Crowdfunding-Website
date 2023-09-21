@@ -21,7 +21,7 @@
         <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
         <!-- Template Stylesheet -->
-        <link href="css/style.css" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     </head>
 
     <body>
@@ -76,7 +76,7 @@
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu">
-                                    <a href="sign-up.html" class="dropdown-item">Request Help</a>
+                                    <a href="{{ url_for('register') }}" class="dropdown-item">Request Help</a>
                                     <a href="donate.html" class="dropdown-item">Donate Now</a>
                                     
                                 </div>
@@ -94,9 +94,23 @@
             <!-- Sign up Form -->
             
             <div class="sign-up " style="z-index: 1;">
+                
+            
                 <h1>Let us help you begin your fundraising journey</h1>
                 
                 <div class="register mt-5">
+                    
+    
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+                    
                     <h2 class="" style="width: 450px; color:greenyellow;">What best describes why you're fundraising </h2>
                         <form action="">
                             <label for="option">Please select a category</label><br>

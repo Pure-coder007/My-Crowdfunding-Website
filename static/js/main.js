@@ -2,12 +2,12 @@
     "use strict";
     
     // loader
-    var loader = function () {
+    let loader = function () {
         setTimeout(function () {
             if ($('#loader').length > 0) {
                 $('#loader').removeClass('show');
             }
-        }, 1);
+        }, 1000);
     };
     loader();
     

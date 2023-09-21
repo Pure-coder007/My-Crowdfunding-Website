@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -21,10 +22,11 @@
         <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
         <!-- Template Stylesheet -->
-        <link href="css/style.css" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     </head>
 
     <body>
+        
         
             <div class="register-page ">
                 
@@ -77,10 +79,10 @@
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu">
                                     <a href="sign-up.html" class="dropdown-item">Request Help</a>
-                                    <a href="donate.html" class="dropdown-item">Donate Now</a>
                                     
                                 </div>
                             </div>
+                            <a href="logout.html" class="dropdown-item">Logout</a>
                             <!-- <a href="contact.html" class="nav-item nav-link">Contact</a> -->
                         </div>
                     </div>
@@ -89,23 +91,6 @@
             <!-- Nav Bar End -->
             
             
-            
-            
-            <!-- Sign up Form -->
-            
-            <div class="sign-up">
-                <h1>Please verify the token sent to your email</h1>
-                <div class="register mt-5">
-                    <h2 class="text-warning">Verify</h2>
-                    
-                        <form action="">
-                            <input type="number" name="number" id="number" placeholder="OTP" width="100px" required>
-                            <br>
-                            <br>
-                            <button>Submit</button>
-                        </form>
-                </div>
-            </div>
 
             <!-- JavaScript Libraries -->
             <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
