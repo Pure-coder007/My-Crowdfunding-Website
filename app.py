@@ -1,11 +1,16 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user
+from models import add_user, get_user, add_category, get_requests
 import mysql.connector
 from flask_login import current_user
 import random
 from flask_mail import Mail, Message
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+
+
+
 
 # Flask mail configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -46,12 +51,14 @@ def register():
         email = request.form['email']
         confirm_email = request.form['confirm_email']
         password = request.form['password']
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
         
         if email == confirm_email:
             otp = random.randint(1000, 9999)
             session['otp'] = otp
             send_otp(email, otp)
-            add_user(first_name, last_name, email, password)
+            add_user(first_name, last_name, email, hashed_password)
             # send_otp(email)
             flash('Please verify your email', 'success')
             return redirect(url_for('token', email=email))
@@ -92,8 +99,10 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        if email == 'test@example.com' and password == 'password':
+        user = get_user(email)
+        if user and bcrypt.check_password_hash(user[4], password):
             flash('Successfully logged in', 'success')
+            session['user_id'] = user[0]
             return redirect(url_for('category'))
         else:
             flash('Invalid email or password', 'danger')
@@ -103,9 +112,18 @@ def login():
 
 
 # Category route
-@app.route('/category')
+@app.route('/category', methods=['GET', 'POST'])
 def category():
-    pass
+    if request.method == 'POST':
+        category_name = request.form.get('options')
+        fundraising_for = request.form.get('options')
+        amount = request.form.get('amount')
+        description = request.form.get('description')
+        
+        add_category(category_name, fundraising_for, amount, description)
+        print(category, fundraising_for, amount, description)
+        flash('Request Submitted, waiting for admin approval', 'success')
+        return redirect(url_for('category'))
     return render_template('category.html')
 
 
@@ -114,7 +132,7 @@ def category():
 # View_Requests routes
 @app.route('/view_request')
 def view_request():
-    pass
+    requests = get_requests()
     return render_template('view_request.html')
 
 

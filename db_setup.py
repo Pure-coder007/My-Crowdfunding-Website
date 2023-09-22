@@ -16,9 +16,47 @@ def setup_database():
         password VARCHAR(255) NOT NULL
     )
     """)
+    
+    
+    
+    # Categories table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS categories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        category_name VARCHAR(255) NOT NULL,
+        fundraising_for VARCHAR(255),
+        amount DECIMAL(20, 2) NOT NULL,
+        description TEXT
+    )
+    """)
+    
+    
+    # Requests Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS requests(
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT,
+        category_id INT,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (category_id) REFERENCES categories(id),
+        
+    )
+    """)
+    
+    
+    
     connection.commit()
     cursor.close()
     connection.close()
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     

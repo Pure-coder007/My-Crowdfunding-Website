@@ -63,21 +63,21 @@
             <!-- Nav Bar Start -->
             <div class="navbar navbar-expand-lg bg-dark navbar-dark">
                 <div class="container-fluid">
-                    <a href="index.html" class="navbar-brand">SpeedyHelp</a>
+                    <a href="{{ url_for('index') }}" class="navbar-brand">SpeedyHelp</a>
                     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav ml-auto">
-                            <a href="index.html" class="nav-item nav-link active">Home</a>
+                            <a href="{{ url_for('index') }}" class="nav-item nav-link active">Home</a>
                             
                             
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
                                 <div class="dropdown-menu">
                                     <a href="{{ url_for('register') }}" class="dropdown-item">Request Help</a>
-                                    <a href="donate.html" class="dropdown-item">Donate Now</a>
+                                    <a href="{{ url_for('view_request') }}" class="dropdown-item">Pending Requests</a>
                                     
                                 </div>
                             </div>
@@ -112,7 +112,7 @@
                         {% endwith %}
                     
                     <h2 class="" style="width: 450px; color:greenyellow;">What best describes why you're fundraising </h2>
-                        <form action="">
+                        <form action="" method='POST'>
                             <label for="option">Please select a category</label><br>
                             <select name="options" id="options" style="width: 300px; height:50px; border-radius:10px; padding-left: 10px;" required>
                                 <option value="animals">Please select an option -</option>
@@ -152,7 +152,7 @@
                             <textarea name="description" id="description" cols="50" rows="5" style="border-radius:10px; padding-left:10px; border:none;" required></textarea>
                             <br>
                             
-                            <button>Submit</button>
+                            <button type="submit">Submit</button>
                         </form>
                 </div>
             </div>
