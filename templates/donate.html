@@ -82,14 +82,14 @@
 
                 <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                     <div class="navbar-nav ml-auto">
-                        <a href="index.html" class="nav-item nav-link">Home</a>
+                        <a href="{{ url_for('index') }}" class="nav-item nav-link">Home</a>
                         
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle active" data-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu">
-                                <a href="sign-up.html" class="dropdown-item">Request help</a>
+                                <a href="{{ url_for('register') }}" class="dropdown-item">Request help</a>
                                 
-                                <a href="donate.html" class="dropdown-item">Donate Now</a>
+                                <a href="{{ url_for('donate') }}" class="dropdown-item">Donate Now</a>
                                 
                             </div>
                         </div>
@@ -109,8 +109,8 @@
                         <h2>Donate Now</h2>
                     </div>
                     <div class="col-12">
-                        <a href="">Home</a>
-                        <a href="">Donate</a>
+                        <a href="{{ url_for('index') }}">Home</a>
+                        <a href="{{ url_for('donate') }}">Donate</a>
                     </div>
                 </div>
             </div>
@@ -189,8 +189,8 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="footer-link">
                             <h2>Popular Links</h2>
-                            <a href="sign-up.html">Request help</a>
-                            <a href="donate.html">Donate</a>
+                            <a href="{{ url_for('register') }}">Request help</a>
+                            <a href="{{ url_for('donate') }}">Donate</a>
                             
                         </div>
                     </div>
@@ -219,7 +219,7 @@
             <div class="container copyright">
                 <div class="row">
                     <div class="col-md-6">
-                        <p>&copy; <a href="#">SpeedyHelp</a>, All Right Reserved.</p>
+                        <p>&copy; <a href="{{ url_for('index') }}">SpeedyHelp</a>, All Right Reserved.</p>
                     </div>
         <!-- Footer End -->
 

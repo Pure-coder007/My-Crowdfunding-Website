@@ -72,17 +72,10 @@
                         <div class="navbar-nav ml-auto">
                             <a href="{{ url_for('index') }}" class="nav-item nav-link active">Home</a>
                             
-                            
-                            <div class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
-                                <div class="dropdown-menu">
-                                    <a href="{{ url_for('register') }}" class="dropdown-item">Request Help</a>
-                                    <a href="{{ url_for('view_request') }}" class="dropdown-item">Pending Requests</a>
-                                    
-                                </div>
-                            </div>
-                            <!-- <a href="contact.html" class="nav-item nav-link">Contact</a> -->
+                            <a class="nav-item nav-link" href="{{ url_for('view_request') }}">Pending Request</a>
+                            <a class="nav-item nav-link" href="{{ url_for('logout') }}">Log out</a>
                         </div>
+                            
                     </div>
                 </div>
             </div>
@@ -93,7 +86,7 @@
             
             <!-- Sign up Form -->
             
-            <div class="sign-up " style="z-index: 1;">
+            <div class="sign-up " style="z-index: 1;  margin-bottom:200px;">
                 
             
                 <h1>Let us help you begin your fundraising journey</h1>
@@ -114,7 +107,7 @@
                     <h2 class="" style="width: 450px; color:greenyellow;">What best describes why you're fundraising </h2>
                         <form action="" method='POST'>
                             <label for="option">Please select a category</label><br>
-                            <select name="options" id="options" style="width: 300px; height:50px; border-radius:10px; padding-left: 10px;" required>
+                            <select name="options" id="options" style="width: 300px; height:35px; border-radius:10px; padding-left: 10px;" required>
                                 <option value="animals">Please select an option -</option>
                                 <option value="animals">Animals</option>
                                 <option value="business">Business</option>
@@ -138,18 +131,29 @@
                             
                             
                             <label for="option">Who are you fundraising for?</label><br>
-                            <select name="options" id="options" style="width: 300px; height:50px; border-radius:10px; padding-left: 10px;" required>
+                            <select name="options" id="options" style="width: 300px; height:35px; border-radius:10px; padding-left: 10px;" required>
                                 <option value="animals">Please select an option -</option>
                                 <option value="yourself">Yourself</option>
                                 <option value="others">Others</option>
                             </select>
                             <br>
+                            <br>
+                            <label for="expiryDate">Fundraising Expiry Date:</label>
+                            <input type="date" name="expiryDate" id="expiryDate" style="width: 300px; height:35px; border-radius:10px; padding-left: 10px;" required>
+
+                            <br>
+                            
                             <br><label for="amount">Amount</label>
-                            <input type="number" name="amount" id="amount" placeholder="Please enter amount" style="padding-left: 20px;" required>
+                            <input type="number" name="amount" id="amount" placeholder="Please enter amount" style="width: 300px; height:35px; border-radius:10px; padding-left: 10px;" required>
+                            <br>
+                            <br>
+                            
+                            <label for="minAmount">Minimum Donation Amount:</label>
+                            <input type="number" name="minAmount" id="minAmount" placeholder=" Enter minimum donation amount" style="width: 300px; height:35px; border-radius:10px; padding-left: 10px;" required>
                             <br>
                             <br>
                             <label for="description">Description</label>
-                            <textarea name="description" id="description" cols="50" rows="5" style="border-radius:10px; padding-left:10px; border:none;" required></textarea>
+                            <textarea name="description" id="description" cols="50" rows="3" style="border-radius:10px; padding-left:10px; border:none;" required></textarea>
                             <br>
                             
                             <button type="submit">Submit</button>
@@ -158,6 +162,13 @@
             </div>
 
             <!-- JavaScript Libraries -->
+            <!-- jQuery library -->
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+                <!-- jQuery UI library -->
+                <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+                <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
             <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
             <script src="lib/easing/easing.min.js"></script>
@@ -172,6 +183,6 @@
 
             <!-- Template Javascript -->
             <script src="js/main.js"></script>
-        </div>
+        </div>        
     </body>
 </html>

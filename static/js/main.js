@@ -177,3 +177,20 @@
     
 })(jQuery);
 
+$(document).ready(function() {
+    $("#expiryDate").datepicker();
+});
+
+$(document).ready(function() {
+    $("#expiryDate").datepicker();
+
+    $("form").submit(function(e) {
+        const enteredAmount = parseFloat($("#amount").val());
+        const minAmount = parseFloat($("#minAmount").val());
+
+        if (enteredAmount < minAmount) {
+            alert("The donation amount must be greater than or equal to " + minAmount);
+            e.preventDefault();  // Stop form submission
+        }
+    });
+});

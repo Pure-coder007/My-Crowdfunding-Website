@@ -1,32 +1,30 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user, get_user, add_category, get_requests
+from models import add_user, get_user, add_category, get_requests, User, get_user_by_id
+from utilities import send_otp
 import mysql.connector
-from flask_login import current_user
+from flask_login import login_user, current_user, logout_user, login_required, LoginManager
 import random
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
+
 bcrypt = Bcrypt(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message_category = 'info'
 
-
-
-
+app.config.from_pyfile('config.py')
 # Flask mail configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'kingsleydike318@gmail.com'
-app.config['MAIL_PASSWORD'] = ' byyhvorltumsxffq'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
 
 mail = Mail(app)
 
-app.secret_key = 'language007'
 
+@login_manager.user_loader
+def load_user(user_id):
+    return get_user_by_id(user_id)
 
-# Creating random One-Time-Password
-# OTP = random.randint(1000, 9999)
 
 def send_otp(email, otp):
     msg = Message('Verification Token', sender='Anonymous@gmail.com', recipients=[email])
@@ -45,6 +43,8 @@ def index():
 # Register route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if not current_user:
+        return redirect(url_for('index'))
     if request.method == 'POST':
         first_name = request.form['first_name']
         last_name = request.form['last_name']
@@ -95,15 +95,18 @@ def token(email):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if not current_user:
+        return redirect(url_for('index'))
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
 
         user = get_user(email)
-        if user and bcrypt.check_password_hash(user[4], password):
-            flash('Successfully logged in', 'success')
-            session['user_id'] = user[0]
-            return redirect(url_for('category'))
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            # flash('Successfully logged in', 'success')
+            session['user_id'] = user.id
+            return redirect(url_for('index'))
         else:
             flash('Invalid email or password', 'danger')
             return redirect(url_for('login'))
@@ -132,16 +135,24 @@ def category():
 # View_Requests routes
 @app.route('/view_request')
 def view_request():
+    if not current_user:
+        return redirect(url_for('index'))
     requests = get_requests()
     return render_template('view_request.html')
 
 
+# Login route
+@app.route("/logout", methods=['GET', 'POST'])
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 
 
 
-
-
+@app.route("/donate", methods=['GET', 'POST'])
+def donate():
+    return redirect(url_for('donate'))
 
 
 

@@ -1,5 +1,12 @@
 # models.py
 import mysql.connector
+from flask_login import UserMixin, LoginManager
+# from db_setup import 
+
+
+login_manager = LoginManager()
+
+ 
 
 config = {
     'user': 'kingsley',
@@ -9,6 +16,19 @@ config = {
     'database': 'user_registration'
 }
 
+class User(UserMixin):
+    def __init__(self, id, first_name, last_name, email, password):
+        self.id = id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = password
+
+    @classmethod
+    def get(cls, user_id):
+        pass
+    
+    
 # Adding a user to the database
 def add_user(first_name, last_name, email, password):
     try:
@@ -24,15 +44,35 @@ def add_user(first_name, last_name, email, password):
         connection.close()
 
 
+
+def get_user_by_id(user_id):
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('SELECT * FROM users WHERE id=%s', (user_id,))
+    user_record = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    if user_record:
+        return User(id=user_record['id'], first_name=user_record['first_name'], last_name=user_record['last_name'], email=user_record['email'], password=user_record['password'])
+    return None
+
+
+
+
+
 # Getting a user logged in
 def get_user(email):
     connection = mysql.connector.connect(**config)
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
     cursor.execute('SELECT * FROM users WHERE email=%s', (email,))
-    user = cursor.fetchone()
+    user_record = cursor.fetchone()
     cursor.close()
     connection.close()
-    return user
+
+    if user_record:
+        return User(id=user_record['id'], first_name=user_record['first_name'], last_name=user_record['last_name'], email=user_record['email'], password=user_record['password'])
+    return None
 
 
 
