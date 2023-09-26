@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user, get_user, add_category, get_requests, User, get_user_by_id
+from models import add_user, get_user, add_category, get_requests, User, get_user_by_id, is_user_admin, set_request_status
 from utilities import send_otp
 import mysql.connector
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
@@ -58,7 +58,8 @@ def register():
             otp = random.randint(1000, 9999)
             session['otp'] = otp
             send_otp(email, otp)
-            add_user(first_name, last_name, email, hashed_password)
+            # Change to true if creating an admin
+            add_user(first_name, last_name, email, hashed_password, False)
             # send_otp(email)
             flash('Please verify your email', 'success')
             return redirect(url_for('token', email=email))
@@ -95,8 +96,10 @@ def token(email):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if not current_user:
+    if current_user.is_authenticated:
+        flash('You are already logged in!', 'info')
         return redirect(url_for('index'))
+
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
@@ -106,6 +109,9 @@ def login():
             login_user(user)
             # flash('Successfully logged in', 'success')
             session['user_id'] = user.id
+            if user.is_admin:
+                return redirect(url_for('admin'))
+
             return redirect(url_for('index'))
         else:
             flash('Invalid email or password', 'danger')
@@ -116,18 +122,23 @@ def login():
 
 # Category route
 @app.route('/category', methods=['GET', 'POST'])
+@login_required
 def category():
     if request.method == 'POST':
-        category_name = request.form.get('options')
-        fundraising_for = request.form.get('options')
+        user_id = current_user.id
+        category_name = request.form.get('category-name')
+        fundraising_for = request.form.get('fundraising-for')
         amount = request.form.get('amount')
         description = request.form.get('description')
+        expiry_date = request.form.get('expiryDate')
+        # user_email = request.form.get('user_email')
         
-        add_category(category_name, fundraising_for, amount, description)
-        print(category, fundraising_for, amount, description)
+        add_category(user_id, category_name, fundraising_for, expiry_date, amount, description)
+        print(category, fundraising_for, amount, description, expiry_date)
         flash('Request Submitted, waiting for admin approval', 'success')
         return redirect(url_for('category'))
     return render_template('category.html')
+
 
 
 
@@ -156,17 +167,62 @@ def donate():
 
 
 
+@app.route('/admin')
+def admin():
+    email = current_user.email
+    if not is_user_admin(email):
+        flash('You are not authorized to access this page!', 'danger')
+        return redirect(url_for('login'))
+
+    return render_template('admin.html')
+
+
+@app.route('/see_donators')
+def see_donators():
+    pass
+    return render_template('see_donators.html')
 
 
 
+@app.route('/see_requests')
+def see_requests():
+    
+    if not current_user:
+        return redirect(url_for('index'))
+    my_requests = get_requests()
+    print('Request:', my_requests)
+    
+    my_requests = get_requests()
+    
+    # Formatting the expiry_date for each request
+    for request_ in my_requests:
+        request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
+    
+    if not current_user.is_admin:
+        flash('You are not authorized to access this page!', 'danger')
+        return redirect(url_for('index'))
+    return render_template('see_requests.html', my_requests=my_requests)
 
 
 
+@app.route('/approve_request/<int:request_id>', methods=['POST'])
+@login_required
+def approve_request(request_id):
+    if not set_request_status(request_id, "approved"):
+        flash('Error approving the request. Please try again.', 'danger')
+    else:
+        flash('Request successfully approved.', 'success')
+    return redirect(url_for('see_requests'))
 
 
-
-
-
+@app.route('/disapprove_request/<int:request_id>', methods=['POST'])
+@login_required
+def disapprove_request(request_id):
+    if not set_request_status(request_id, "disapproved"):
+        flash('Error disapproving the request. Please try again.', 'danger')
+    else:
+        flash('Request successfully disapproved.', 'success')
+    return redirect(url_for('see_requests'))
 
 
 
