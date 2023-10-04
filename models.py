@@ -25,6 +25,8 @@ class User(UserMixin):
         self.password = password
         self.is_admin = is_admin
 
+
+
     @classmethod
     def get(cls, user_id):
         pass
@@ -78,13 +80,13 @@ def get_user(email):
 
 
 # Adding a category to the database
-def add_category(user_id, category_name, fundraising_for, expiry_date, amount, description):
+def add_category(user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount):
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
     cursor.execute("""
-    INSERT INTO categories (user_id, category_name, fundraising_for, expiry_date, amount, description) 
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """, (user_id, category_name, fundraising_for, expiry_date, amount, description))
+    INSERT INTO categories (user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount) 
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount))
     connection.commit()
     cursor.close()
     connection.close()
@@ -97,21 +99,49 @@ def add_category(user_id, category_name, fundraising_for, expiry_date, amount, d
 
 
 
-# Showing the requests function for users making help requests
-def get_requests():
-    connection = mysql.connector.connect(**config)
-    cursor = connection.cursor(dictionary=True)  # fetch as dictionaries
+def get_all_requests():
+    try:
+        connection = mysql.connector.connect(**config)
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute("""
+        SELECT categories.id, users.email as user_email, category_name, fundraising_for, expiry_date, amount, description, minimum_amount
+        FROM categories 
+        JOIN users ON categories.user_id = users.id
+        """)
+
+        requests = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return requests
+    except mysql.connector.Error as err:
+        print("MySQL Error:", err)
+        return []
     
-    cursor.execute("""
-    SELECT categories.id, users.email as user_email, category_name, fundraising_for, expiry_date, amount, description 
-    FROM categories 
-    JOIN users ON categories.user_id = users.id
-    """)
-    
-    requests = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return requests
+
+
+# Sowing a user his request
+def get_user_requests(user_id):
+    try:
+        connection = mysql.connector.connect(**config)
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute("""
+        SELECT categories.id, users.email as user_email, category_name, fundraising_for, expiry_date, amount, description, minimum_amount
+        FROM categories 
+        JOIN users ON categories.user_id = users.id
+        WHERE categories.user_id = %s
+        """, (user_id,))
+
+        user_requests = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return user_requests
+    except mysql.connector.Error as err:
+        print("MySQL Error:", err)
+        return []
+
+
 
 
 
@@ -120,16 +150,86 @@ def is_user_admin(email):
     return user.is_admin if user else False
 
 
-def set_request_status(request_id, status):
+
+ 
+# def set_request_status(request_id, status):
+#     connection = None
+#     cursor = None
+
+#     try:
+#         connection = mysql.connector.connect(**config)
+#         cursor = connection.cursor()
+#         update_query = "UPDATE approved_requests SET status = %s WHERE id = %s"
+#         cursor.execute(update_query, (status, request_id))
+#         connection.commit()
+#         # print(f"Query executed: {update_query}")
+#         return True
+#     except mysql.connector.Error as err:
+#         print("Error:", err)
+#         return False
+#     finally:
+#         if cursor:
+#             cursor.close()
+#         if connection:
+#             connection.close()
+def set_request_status(request_id, status, user_email, category_name, fundraising_for, expiry_date, amount):
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+
     try:
-        connection = mysql.connector.connect(**config)
-        cursor = connection.cursor()
-        cursor.execute("UPDATE requests SET status = %s WHERE id = %s", (status, request_id))
+        insert_query = """
+            INSERT INTO approved_requests (id, status, user_email, category_name, fundraising_for, expiry_date, amount)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (request_id, status, user_email, category_name, fundraising_for, expiry_date, amount))
         connection.commit()
+        cursor.close()
+        connection.close()
         return True
     except mysql.connector.Error as err:
         print("Error:", err)
         return False
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+# Showing the donator all donations
+def get_all_donations():
+    try:
+        connection = mysql.connector.connect(**config)
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM donations")
+        all_donations = cursor.fetchall()
+        return all_donations
+    except mysql.connector.Error as err:
+        print("Error fetching all donations:", err)
+        return []
+
+
+
+
+
+
+
+def add_donator(name, email, first_time_donating, gender):
+    try:
+        connection = mysql.connector.connect(**config)
+        cursor = connection.cursor()
+        
+        cursor.execute("INSERT INTO donators (name, email, first_time_donating, gender) VALUES (%s, %s, %s, %s)", (name, email, first_time_donating, gender))
+        connection.commit()
+    except mysql.connector.Error as err:
+        print("Error: ", err)
     finally:
         cursor.close()
         connection.close()

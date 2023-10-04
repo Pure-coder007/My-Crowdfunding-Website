@@ -9,7 +9,7 @@ def setup_database():
     cursor.execute('CREATE DATABASE IF NOT EXISTS crowd_funding')
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id INT AUTO_INCREMENT PRIMARY KEY, 
         first_name VARCHAR(50) NOT NULL,
         last_name VARCHAR(50) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -18,6 +18,18 @@ def setup_database():
     )
     """)
     
+
+    # Registering donators
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS donators (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            first_time_donating BOOLEAN,
+            gender VARCHAR(10),
+            admin BOOLEAN
+        );
+    """)
     
     
     # Categories table
@@ -29,9 +41,10 @@ def setup_database():
         fundraising_for VARCHAR(255) NOT NULL,  
         expiry_date DATE,  
         amount DECIMAL(20, 2) NOT NULL,
+        minimum_amount DECIMAL(20, 2) DEFAULT NULL,
         description TEXT,
         user_id INT
-    )
+    );
     """)
     
     
@@ -50,30 +63,64 @@ def setup_database():
     
     # Viewing users requests
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS my_requests(
+    CREATE TABLE IF NOT EXISTS approved_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
+    user_email VARCHAR(255) NOT NULL,
+    category_name VARCHAR(255) NOT NULL,
+    fundraising_for VARCHAR(255) NOT NULL,
+    expiry_date DATE NOT NULL,
+    amount INT NOT NULL,
     description TEXT,
-    amount INT,
-    status ENUM('pending', 'approved', 'disapproved') NOT NULL DEFAULT 'pending',
-    FOREIGN KEY (user_id) REFERENCES users(id)
-)
+    status VARCHAR(255) NOT NULL,  -- Add a status column
+    INDEX (user_email),
+    FOREIGN KEY (user_email) REFERENCES users(email)
+);
+
+
 
 """)
-
-
+    connection.commit()
+    cursor.close()
+    connection.close()
     
     
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Fund(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    description TEXT,
+    amount INT,
+    amount_donated INT,
+    user_id INT
+    )
+""")    
     connection.commit()
     cursor.close()
     connection.close()
     
     
     
+    cursor.execute("""
+    CREATE TABLE donators(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    first_time_donating BOOLEAN NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+   
+    );
+
+""")
     
-    
-    
-    
+    cursor.execute("""
+    CREATE TABLE donation_info (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    donor_email VARCHAR(255) NOT NULL,
+    amount_donated DECIMAL(10, 2) NOT NULL,
+    receiver_email VARCHAR(255) NOT NULL,
+)
+    """)
+
     
     
     

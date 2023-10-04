@@ -908,7 +908,7 @@ a:focus {
 }
 
 .causes .progress {
-    height: 10px;
+    height: 20px;
     border-radius: 0;
     background: #dddddd;
     overflow: visible;
@@ -1979,7 +1979,7 @@ a:focus {
 
 .sidebar .category-widget ul li span {
     display: inline-block;
-    float: right;
+    float:right;
 }
 
 .sidebar .sidebar-widget .tag-widget {
@@ -2147,7 +2147,8 @@ a:focus {
 
 
 .register-page{
-    background-image: url(../img/causes-2.jpg);
+    /* background-image: url(../img/causes-2.jpg); */
+    background-color: red;
     background-repeat: no-repeat;
     background-size: cover;
     z-index: 1;
@@ -2246,3 +2247,4 @@ button{
     
     background: rgba(0, 0, 0, 0.639);
 }
+

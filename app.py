@@ -1,11 +1,12 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user, get_user, add_category, get_requests, User, get_user_by_id, is_user_admin, set_request_status
+from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_user_requests, get_all_donations, add_donator
 from utilities import send_otp
 import mysql.connector
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
 import random
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
+from db_setup import setup_database
 
 app = Flask(__name__)
 
@@ -25,12 +26,17 @@ mail = Mail(app)
 def load_user(user_id):
     return get_user_by_id(user_id)
 
-
+# OTP function
 def send_otp(email, otp):
     msg = Message('Verification Token', sender='Anonymous@gmail.com', recipients=[email])
     msg.body = f'Your verification token is {otp}'
     print('otp :', otp)
     mail.send(msg)
+
+
+
+
+
 
 
 @app.route('/')
@@ -68,6 +74,9 @@ def register():
         return redirect(url_for('register'))
     return render_template('register.html')
         
+
+
+
 
 
 # OTP route
@@ -131,10 +140,11 @@ def category():
         amount = request.form.get('amount')
         description = request.form.get('description')
         expiry_date = request.form.get('expiryDate')
+        minimum_amount = request.form.get('minimum_amount')
         # user_email = request.form.get('user_email')
         
-        add_category(user_id, category_name, fundraising_for, expiry_date, amount, description)
-        print(category, fundraising_for, amount, description, expiry_date)
+        add_category(user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount)
+        print(category, fundraising_for, amount, description, expiry_date, minimum_amount)
         flash('Request Submitted, waiting for admin approval', 'success')
         return redirect(url_for('category'))
     return render_template('category.html')
@@ -143,13 +153,18 @@ def category():
 
 
 
-# View_Requests routes
+# View_Requests routes (users)
 @app.route('/view_request')
 def view_request():
-    if not current_user:
+    if not current_user.is_authenticated:
         return redirect(url_for('index'))
-    requests = get_requests()
-    return render_template('view_request.html')
+    
+    user_requests = get_user_requests(current_user.id)
+    print("User ID:", current_user.id)
+
+    print('Request:', user_requests)
+    return render_template('view_request.html', requests=user_requests)
+
 
 
 # Login route
@@ -161,9 +176,8 @@ def logout():
 
 
 
-@app.route("/donate", methods=['GET', 'POST'])
-def donate():
-    return redirect(url_for('donate'))
+
+
 
 
 
@@ -173,7 +187,6 @@ def admin():
     if not is_user_admin(email):
         flash('You are not authorized to access this page!', 'danger')
         return redirect(url_for('login'))
-
     return render_template('admin.html')
 
 
@@ -184,45 +197,114 @@ def see_donators():
 
 
 
+
+# See user requests (admin)
 @app.route('/see_requests')
 def see_requests():
+    # Get the email of the current user
+    email = current_user.email
     
-    if not current_user:
-        return redirect(url_for('index'))
-    my_requests = get_requests()
-    print('Request:', my_requests)
-    
-    my_requests = get_requests()
-    
-    # Formatting the expiry_date for each request
-    for request_ in my_requests:
-        request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
-    
-    if not current_user.is_admin:
+    # Check if the user is logged in and has admin privileges
+    if not is_user_admin(email):
         flash('You are not authorized to access this page!', 'danger')
         return redirect(url_for('index'))
-    return render_template('see_requests.html', my_requests=my_requests)
+    
+    try:
+        # Retrieve user requests for the current user's ID
+        all_requests = get_all_requests()
+
+        # my_requests = get_requests()
+        
+        # For debugging: print user ID and retrieved requests
+        print("User ID:", current_user.id)
+        print('Requests:', all_requests)
+        
+        # Formatting the expiry_date for each request
+        for request_ in all_requests:
+            request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
+        
+        # Render the template with the user's requests
+        return render_template('see_requests.html', my_requests=all_requests)
+    
+    except Exception as e:
+        # Handle any exceptions, e.g., database connection issues
+        flash('An error occurred while fetching user requests.', 'danger')
+        return redirect(url_for('index'))
+
+
 
 
 
 @app.route('/approve_request/<int:request_id>', methods=['POST'])
-@login_required
 def approve_request(request_id):
-    if not set_request_status(request_id, "approved"):
-        flash('Error approving the request. Please try again.', 'danger')
-    else:
-        flash('Request successfully approved.', 'success')
+    if not is_user_admin(current_user.email):
+        flash('You are not authorized to approve requests.', 'danger')
+        return redirect(url_for('see_requests'))
+    
+    try:
+        # Update the request status to "approved"
+        status = 'approved'
+        user_email = current_user.email  # You should have the user's email
+        category_name = 'category_name'  # Replace with the actual category name
+        fundraising_for = 'fundraising_for'
+        expiry_date = 'expiry_date'
+        amount = 'amount'  # Replace with the actual fundraising purpose
+        if set_request_status(request_id, status, user_email, category_name, fundraising_for, expiry_date, amount):
+            flash('Request approved successfully!', 'success')
+        else:
+            flash('Failed to update request status', 'danger')
+    except Exception as e:
+        flash(f'An error occurred while approving the request. {e}', 'danger')
+    
     return redirect(url_for('see_requests'))
 
 
-@app.route('/disapprove_request/<int:request_id>', methods=['POST'])
-@login_required
-def disapprove_request(request_id):
-    if not set_request_status(request_id, "disapproved"):
-        flash('Error disapproving the request. Please try again.', 'danger')
-    else:
-        flash('Request successfully disapproved.', 'success')
-    return redirect(url_for('see_requests'))
+
+
+
+
+# Mail function to donators
+def send_mail(email):
+    msg = Message('Verification Email', sender='Anonymous@gmail.com', recipients=[email])
+    msg.body = f'You just successfully registered on speedyhelp as a donator. Thank you 🎉🎉🎉🎉🥳🥳🎆🎆🥂🥂🎇🎇'
+    print('message :', )
+    mail.send(msg)
+
+
+
+# Register donators
+@app.route('/donate', methods=['GET', 'POST'])
+def donate():
+    if not current_user:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        first_time_donating = 1 if request.form.get('first_time_donating') == 'yes' else 0  # Convert 'yes' to 1, 'no' to 0
+        gender = request.form['gender']
+
+        
+        
+        # otp = random.randint(1000, 9999)
+        # session['otp'] = otp
+        send_mail(email)
+        # Change to true if creating an admin
+        add_donator(name, email, first_time_donating, gender)
+        # send_otp(email)
+        # flash('You are Welcome', 'success')
+        return redirect(url_for('start_donating', email=email))
+    return render_template('donate.html')
+
+
+@app.route('/start_donating', methods=['GET', 'POST'])
+def start_donating():
+    all_requests = get_all_requests()
+    for request_ in all_requests:
+            request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
+    
+    print('Requests:', all_requests)
+        
+    return render_template('start_donating.html', requests=all_requests)
 
 
 
@@ -233,17 +315,18 @@ def disapprove_request(request_id):
 
 
 
+# @app.route('/start_donating', methods=['GET', 'POST'])
+# def start_donating():
+#     all_requests = get_all_requests()
+    
+#     is_authenticated = current_user.is_authenticated
+#     if is_authenticated:
+#         print("User ID:", current_user.id)
+#         print('Requests:', all_requests)
 
-
-
-
-
-
-
-
-
-
-
+#     for request_ in all_requests:
+#             request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
+#     return render_template('start_donating.html',  my_requests=all_requests)
 
 if __name__ == "__main__":
     app.run(debug=True)
