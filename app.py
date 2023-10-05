@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_user_requests, get_all_donations, add_donator
+from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_user_requests, get_all_donations, add_donator, get_all_requests, add_request
 from utilities import send_otp
 import mysql.connector
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
@@ -7,6 +7,7 @@ import random
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 from db_setup import setup_database
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -141,15 +142,24 @@ def category():
         description = request.form.get('description')
         expiry_date = request.form.get('expiryDate')
         minimum_amount = request.form.get('minimum_amount')
-        # user_email = request.form.get('user_email')
-        
+
+        # Assuming you can obtain the user's email from current_user
+        user_email = current_user.email  # Update this line
+
+        # Validate the form data (e.g., check for required fields)
+
+        # Add request and category to the database
+        add_request(user_email, category_name, fundraising_for, expiry_date, amount, description)
+
         add_category(user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount)
-        print(category, fundraising_for, amount, description, expiry_date, minimum_amount)
+
         flash('Request Submitted, waiting for admin approval', 'success')
-        return redirect(url_for('category'))
+        return redirect(url_for('category'))  # Redirect to the same page after submission
+
     return render_template('category.html')
 
 
+ 
 
 
 
@@ -158,12 +168,16 @@ def category():
 def view_request():
     if not current_user.is_authenticated:
         return redirect(url_for('index'))
-    
-    user_requests = get_user_requests(current_user.id)
-    print("User ID:", current_user.id)
 
-    print('Request:', user_requests)
-    return render_template('view_request.html', requests=user_requests)
+    # Get the current user's ID (assuming you have a User model with an 'id' attribute)
+    user_id = current_user.id
+
+    # Call the function to get user requests
+    user_requests = get_user_requests(user_id)
+    print(user_requests, 'userreq')
+    for t in user_requests:
+        print(t[0], 'desc')
+    return render_template('view_request.html', user_requests=user_requests)
 
 
 
@@ -199,37 +213,16 @@ def see_donators():
 
 
 # See user requests (admin)
-@app.route('/see_requests')
+@app.route('/see_requests', methods=['GET', 'POST'])
 def see_requests():
-    # Get the email of the current user
-    email = current_user.email
+    # Get all user requests from the database
+    requests = get_all_requests()
     
-    # Check if the user is logged in and has admin privileges
-    if not is_user_admin(email):
-        flash('You are not authorized to access this page!', 'danger')
-        return redirect(url_for('index'))
-    
-    try:
-        # Retrieve user requests for the current user's ID
-        all_requests = get_all_requests()
 
-        # my_requests = get_requests()
-        
-        # For debugging: print user ID and retrieved requests
-        print("User ID:", current_user.id)
-        print('Requests:', all_requests)
-        
-        # Formatting the expiry_date for each request
-        for request_ in all_requests:
-            request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
-        
-        # Render the template with the user's requests
-        return render_template('see_requests.html', my_requests=all_requests)
+    print("User ID:", current_user.id)
+    print('Request:', requests)
     
-    except Exception as e:
-        # Handle any exceptions, e.g., database connection issues
-        flash('An error occurred while fetching user requests.', 'danger')
-        return redirect(url_for('index'))
+    return render_template('see_requests.html', requests=requests)
 
 
 
@@ -242,21 +235,21 @@ def approve_request(request_id):
         return redirect(url_for('see_requests'))
     
     try:
-        # Update the request status to "approved"
-        status = 'approved'
-        user_email = current_user.email  # You should have the user's email
-        category_name = 'category_name'  # Replace with the actual category name
-        fundraising_for = 'fundraising_for'
-        expiry_date = 'expiry_date'
-        amount = 'amount'  # Replace with the actual fundraising purpose
-        if set_request_status(request_id, status, user_email, category_name, fundraising_for, expiry_date, amount):
+        # Check if the request with the given ID exists
+        request = request_id
+        
+        if request is not None:
+            # Update the request status to "approved" in the database
+            # status = 'approved'
+            # update_request_status(request_id, status)
             flash('Request approved successfully!', 'success')
         else:
-            flash('Failed to update request status', 'danger')
+            flash('Request not found', 'danger')
     except Exception as e:
         flash(f'An error occurred while approving the request. {e}', 'danger')
     
     return redirect(url_for('see_requests'))
+
 
 
 

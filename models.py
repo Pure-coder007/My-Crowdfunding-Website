@@ -1,8 +1,9 @@
 # models.py
+from flask import redirect, flash, url_for
 import mysql.connector
 from flask_login import UserMixin, LoginManager
 # from db_setup import 
-
+from datetime import datetime
 
 login_manager = LoginManager()
 
@@ -83,32 +84,74 @@ def get_user(email):
 def add_category(user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount):
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
-    cursor.execute("""
-    INSERT INTO categories (user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount) 
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """, (user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount))
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-
+    
+    try:
+        # Validate and parse the expiry_date
+        if not expiry_date:
+            # Handle the case where expiry_date is empty or None
+            raise ValueError('Expiry date is required')
         
+        expiry_date = datetime.strptime(expiry_date, '%Y-%m-%d')
         
+        insert_query = """
+        INSERT INTO categories (user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount) 
+        VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+    
+        # Assuming you have access to the user's email or can obtain it
+        # user_email = get_user_email_by_id(user_id)
         
+        values = (user_id, category_name, fundraising_for, expiry_date, amount, description, minimum_amount)
+        cursor.execute(insert_query, values)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+    except ValueError as e:
+        # Handle invalid date format or missing date
+        flash(str(e), 'error')
+        return redirect(url_for('category'))
+
+    except Exception as e:
+        # Handle other database or general errors
+        flash('An error occurred while adding the category: ' + str(e), 'error')
+        return redirect(url_for('category'))
+
+    
         
+    
+    
+
+def add_request(user_email, category_name, fundraising_for, expiry_date, amount, description):
+    try:
+        connection = mysql.connector.connect(**config)
+        cursor = connection.cursor()
+
+        # SQL INSERT statement
+        insert_query = """
+        INSERT INTO pend_requests (user_email, category_name, fundraising_for, expiry_date, amount, description)
+        VALUES ( %s, %s, %s, %s, %s, %s)
+        """
+
+        # Values to insert into the table
+        values = (user_email, category_name, fundraising_for, expiry_date, amount, description)
+
+        cursor.execute(insert_query, values)
+        connection.commit()
+        
+        cursor.close()
+        connection.close()
+
+    except mysql.connector.Error as err:
+        print("MySQL Error:", err)
 
 
 
+# Getting all categories
 def get_all_requests():
     try:
         connection = mysql.connector.connect(**config)
         cursor = connection.cursor(dictionary=True)
-
-        cursor.execute("""
-        SELECT categories.id, users.email as user_email, category_name, fundraising_for, expiry_date, amount, description, minimum_amount
-        FROM categories 
-        JOIN users ON categories.user_id = users.id
-        """)
+        cursor.execute('SELECT id, user_email, category_name, fundraising_for, expiry_date, amount, description, approved FROM pend_requests')
 
         requests = cursor.fetchall()
         cursor.close()
@@ -117,29 +160,31 @@ def get_all_requests():
     except mysql.connector.Error as err:
         print("MySQL Error:", err)
         return []
-    
 
 
 # Sowing a user his request
 def get_user_requests(user_id):
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+
     try:
-        connection = mysql.connector.connect(**config)
-        cursor = connection.cursor(dictionary=True)
-
-        cursor.execute("""
-        SELECT categories.id, users.email as user_email, category_name, fundraising_for, expiry_date, amount, description, minimum_amount
-        FROM categories 
-        JOIN users ON categories.user_id = users.id
-        WHERE categories.user_id = %s
-        """, (user_id,))
-
+        # Retrieve requests for the current user based on their user ID
+        select_query = """
+        SELECT category_name, fundraising_for,  amount, description FROM categories WHERE user_id = %s
+        """
+        print(user_id, 'userid')
+        cursor.execute(select_query, (user_id,))
         user_requests = cursor.fetchall()
+        print(user_requests, 'userrequest')
+        return user_requests
+
+    except Exception as e:
+        print(f"Error fetching user requests: {str(e)}")
+        return []
+
+    finally:
         cursor.close()
         connection.close()
-        return user_requests
-    except mysql.connector.Error as err:
-        print("MySQL Error:", err)
-        return []
 
 
 

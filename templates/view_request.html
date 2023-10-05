@@ -61,25 +61,26 @@
             
         <div class="container justify-content-center align-items-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" >
             <div class="row">
-                {% for request_ in requests %}
+                {% for request_ in user_requests %}
                 <div class="col-md-6 mb-3 "> <!-- Added "mb-3" for margin-bottom -->
                     <div class="border ">
                         <div class="request-card ml-3 mr-3 mb-3 text-white">
                             <h3>{{ request_.title }}</h3>
-                            <p>Description: {{ request_.description }}</p>
-                            <p>Category: {{ request_.category_name }}</p>
-                            <p>Amount Required: ${{ request_.amount }}</p>
-                            <p>Purpose: {{ request_.fundraising_for }}</p>
+                            <p>Description: {{ request_[3] }}</p>
+                            <p>Category: {{ request_[0] }}</p>
+                            <p>Amount Required: ${{ request_[2] }}</p>
+                            <p>Purpose: {{ request_[1] }}</p>
                             
                             <p>Donation Progress:</p>
                             <div class="progress">
                                 {% for request_ in requests %}
                                 <div class="progress">
                                     <div class="progress-bar progress-bar-striped bg-success" role="progressbar" 
-                                         style="width: {{ percentage }}%; height: 20px" 
-                                         aria-valuenow="{{ percentage }}" 
-                                         aria-valuemin="0" aria-valuemax="100">{{ percentage }}%</div>
+                                         style="width: %; height: 20px;" 
+                                         aria-valuenow="{{ request_.percentage }}" 
+                                         aria-valuemin="0" aria-valuemax="100">{{ request_.percentage }}%</div>
                                 </div>
+                                
                                 {% endfor %}
                             
                             </div>

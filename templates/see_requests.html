@@ -117,23 +117,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for request_ in my_requests %}
-                        <tr>
-                        <form method="POST" action="{{ url_for('approve_request', request_id=request_.id) }}">
-
-                            <td style="font-size:15px;">{{ request_.user_email }}</td>
-                            <td style="font-size:15px;">{{ request_.category_name }}</td>
-                            <td style="font-size:15px;">{{ request_.fundraising_for }}</td>
-                            <td style="font-size:15px;">{{ request_.expiry_date }}</td>
-                            <td style="font-size:15px;" class="text-center">{{ request_.amount }}</td>
-                            <td style="font-size:15px;" class="text-center" >{{ request_.description }}</td>
+                        {% for request_ in requests %}
+                            <tr>
+                                <td>{{ request_.user_email }}</td>
+                                <td>{{ request_.category_name }}</td>
+                                <td>{{ request_.fundraising_for }}</td>
+                                <td>{{ request_.expiry_date }}</td>
+                                <td>{{ request_.amount }}</td>
+                                <td>{{ request_.description }}</td>
                             
-                            <td class="d-flex">
-                                
-                                    <button type="submit" class="btn btn-success">Approve</button>
-                                </form>                                     
-                            </td>
-                        </tr>
+                                <td class="d-flex">
+                                    {% if not request_.approved %}
+                                    <form method="POST" action="{{ url_for('approve_request', request_id=request_.id) }}">
+                                        <button type="submit" class="btn btn-success">Approve</button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-success">Approved</span>
+                                    {% endif %}
+                                </td>
+                            
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

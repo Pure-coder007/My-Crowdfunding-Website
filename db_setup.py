@@ -6,6 +6,8 @@ def setup_database():
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
     
+
+    # Users Table
     cursor.execute('CREATE DATABASE IF NOT EXISTS crowd_funding')
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
@@ -32,74 +34,28 @@ def setup_database():
     """)
     
     
-    # Categories table
+    # Categories table (Users inputed requests)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS categories (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_email VARCHAR(100),  
-        category_name VARCHAR(255) NOT NULL,
-        fundraising_for VARCHAR(255) NOT NULL,  
-        expiry_date DATE,  
-        amount DECIMAL(20, 2) NOT NULL,
-        minimum_amount DECIMAL(20, 2) DEFAULT NULL,
-        description TEXT,
-        user_id INT
-    );
-    """)
-    
-    
-    # Requests Table
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS requests(
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT,
-        category_id INT,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (category_id) REFERENCES categories(id)
-        
-    )
-    """)
-    
-    
-    # Viewing users requests
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS approved_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_email VARCHAR(255) NOT NULL,
+    user_id INT NOT NULL,
     category_name VARCHAR(255) NOT NULL,
     fundraising_for VARCHAR(255) NOT NULL,
-    expiry_date DATE NOT NULL,
-    amount INT NOT NULL,
+    amount DECIMAL(20, 2) NOT NULL,
     description TEXT,
-    status VARCHAR(255) NOT NULL,  -- Add a status column
-    INDEX (user_email),
-    FOREIGN KEY (user_email) REFERENCES users(email)
+    expiry_date DATE,
+    minimum_amount DECIMAL(20, 2),
+    user_email VARCHAR(100),
+    request_status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 
-
-""")
-    connection.commit()
-    cursor.close()
-    connection.close()
+    """)
     
-    
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS Fund(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    description TEXT,
-    amount INT,
-    amount_donated INT,
-    user_id INT
-    )
-""")    
-    connection.commit()
-    cursor.close()
-    connection.close()
-    
-    
-    
+  
+    # Outsiders who register to donate only
     cursor.execute("""
     CREATE TABLE donators(
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -112,16 +68,12 @@ def setup_database():
 
 """)
     
-    cursor.execute("""
-    CREATE TABLE donation_info (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    donor_email VARCHAR(255) NOT NULL,
-    amount_donated DECIMAL(10, 2) NOT NULL,
-    receiver_email VARCHAR(255) NOT NULL,
-)
-    """)
 
-    
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+  
     
     
     
