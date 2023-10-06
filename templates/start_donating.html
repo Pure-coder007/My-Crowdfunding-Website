@@ -1,98 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Speedyhelp - Free Charity Funding</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
-        <meta content="Free Website Template" name="keywords">
-        <meta content="Free Website Template" name="description">
+<head>
+    <meta charset="utf-8">
+    <title>Speedyhelp - Free Charity Funding</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free Website Template" name="keywords">
+    <meta content="Free Website Template" name="description">
 
-        <!-- Favicon -->
-        <link href="img/favicon.ico" rel="icon">
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
 
-        <!-- Google Font -->
-        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        
-        <!-- CSS Libraries -->
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-        <link href="lib/flaticon/font/flaticon.css" rel="stylesheet">
-        <link href="lib/animate/animate.min.css" rel="stylesheet">
-        <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        <!-- Template Stylesheet -->
-        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-    </head>
+    <!-- CSS Libraries -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="lib/flaticon/font/flaticon.css" rel="stylesheet">
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
 
-    <body style="background-color: red;">
-        
-        <div class="donator-page">
-            <div class="register-page"  >
-                <!-- Nav Bar Start -->
-                <div class="navbar navbar-expand-lg bg-dark navbar-dark">
-                    <div class="container-fluid">
-                        <a href="{{ url_for('index') }}" class="navbar-brand">SpeedyHelp</a>
-                        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
+    <!-- Template Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
 
-                        <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
-                            <div class="navbar-nav ml-auto">
-                                <a href="{{ url_for('index') }}" class="nav-item nav-link active">Home</a>  
-                                <!-- <a href="contact.html" class="nav-item nav-link">Contact</a> -->
-                            </div>
+<body style="background-color: red;">
+    <div class="donator-page">
+        <div class="register-page">
+            <!-- Nav Bar Start -->
+            <div class="navbar navbar-expand-lg bg-dark navbar-dark">
+                <div class="container-fluid">
+                    <a href="{{ url_for('index') }}" class="navbar-brand">SpeedyHelp</a>
+                    <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
+                        <div class="navbar-nav ml-auto">
+                            <a href="{{ url_for('index') }}" class="nav-item nav-link active">Home</a>
                         </div>
                     </div>
                 </div>
-                <!-- Nav Bar End -->
-                
-                <div  class=" justify-content-center align-items-center mb-3" style="display: grid;
-                grid-template-columns: auto  auto; padding: 20px; grid-row-gap: -100px;">
-                        {% for request_ in requests %}
-                        <div class="col-md-6 mt-5" >
-                            <div class="border" style="margin-top: 100px; border-radius: 10px; width: 600px; ">
-                                <div class="request-card ml-3 mr-3 mb-3 text-white" style="margin-bottom: 100px;">
-                                    <h3>{{ request_.title }}</h3>
-                                    <p>Description: {{ request_.description }}</p>
-                                    <p>Category: {{ request_.category_name }}</p>
-                                    <p>Amount Required: ${{ request_.amount }}</p>
-                                    <p>Purpose: {{ request_.fundraising_for }}</p>
-                                    
-                                    <p>Donation Progress:</p>
-                                    <div class="progress" style="width: 500px; height: 50px;">
-                                        <div class="progress-bar progress-bar-striped bg-success" role="progressbar" 
-                                            style="width: {{ request_.percentage }}%; height:50px" 
-                                            aria-valuenow="{{ request_.percentage }}" 
-                                            aria-valuemin="0" aria-valuemax="100">{{ request_.percentage }}%</div>
-                                    </div>
-                                    <br>
-                                    <form action="" method="POST">
-                                        <input type="number" name="amount_donated  " placeholder="Enter donation amount" required><br><br><button type="submit">Donate</button>
-                                    <form action=""></form>
+            </div>
+            <!-- Nav Bar End -->
 
+            <div class=" justify-content-center align-items-center mb-3" style="display: grid;
+            grid-template-columns: auto auto; padding: 20px; grid-row-gap: -100px;">
+
+                {% for request_ in requests %}
+                    {% if request_.approved %}
+                        <div class="col-md-6 mt-5">
+                            <div class="border" style="margin-top: 100px; border-radius: 10px; width: 600px;">
+                                <div class="request-card ml-3 mr-3 mb-3 text-white" style="margin-bottom: 100px;">
+                                    <form action="{{url_for('accept_donation', email=request_.user_email, cat_id=request_.id)}}" method="POST">
+                                        <h3>{{ request_.title }}</h3>
+                                        <p>Description: {{ request_.description }}</p>
+                                        <p>Category: {{ request_.category_name }}</p>
+                                        <p>Amount Required: ${{ request_.amount }}</p>
+                                        <p>Purpose: {{ request_.fundraising_for }}</p>
+                                        <p>Balance: {{ balances[request_.category_name] }}</p>
+
+
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-striped bg-success" role="progressbar" 
+                                                 style="width: {{ percentage[request_.category_name] }}%; height: 50px" 
+                                                 aria-valuenow="{{ percentage[request_.category_name] }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">{{ percentage[request_.category_name] }}%</div>
+                                        </div>
+                                
+
+                                        <br>
+                                        <label for="donator_name">Enter your name:</label><br>
+                                        <input type="text" name="donator_name" required placeholder="Same as registered name">
+                                        <br>
+                                        <br>
+                                        <label for="email">Email Address:</label><br>
+                                        <input type="email" name="email" required placeholder="Email">
+                                        <br>
+                                        <br>
+                                        <br>
+
+                                        <!-- Hidden fields for required_amount and amount_donated -->
+
+                                        <input type="number" name="amount_donated" id="amount_donated" placeholder="Enter donation amount" required>
+                                        <input type="hidden" name="required_amount" value="{{ request_.amount }}">
+                                        <br><br>
+                                        {% if balances[request_.category_name] > 0 %}
+                                        <button type="submit">Donate</button>
+                                        {% endif %}
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    
-                </div>
-                
-                <!-- JavaScript Libraries -->
-                <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-                <script src="lib/easing/easing.min.js"></script>
-                <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-                <script src="lib/waypoints/waypoints.min.js"></script>
-                <script src="lib/counterup/counterup.min.js"></script>
-                <script src="lib/parallax/parallax.min.js"></script>
-                
-                <!-- Contact Javascript File -->
-                <script src="mail/jqBootstrapValidation.min.js"></script>
-                <script src="mail/contact.js"></script>
-
-                <!-- Template Javascript -->
-                <script src="js/main.js"></script>
+                    {% endif %}
+                {% endfor %}
             </div>
-        </div>    
-    </body>
+
+            <!-- JavaScript Libraries -->
+            <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+            <script src="lib/easing/easing.min.js"></script>
+            <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+            <script src="lib/waypoints/waypoints.min.js"></script>
+            <script src="lib/counterup/counterup.min.js"></script>
+            <script src="lib/parallax/parallax.min.js"></script>
+
+            <!-- Contact Javascript File -->
+            <script src="mail/jqBootstrapValidation.min.js"></script>
+            <script src="mail/contact.js"></script>
+
+            <!-- Template Javascript -->
+            <script src="js/main.js"></script>
+        </div>
+    </div>
+</body>
 </html>

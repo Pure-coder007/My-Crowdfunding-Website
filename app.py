@@ -1,12 +1,12 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_user_requests, get_all_donations, add_donator, get_all_requests, add_request
+from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_user_requests, get_all_donations, add_donator, get_all_requests, add_request, add_donation, get_request_by_id, update_request_approval, conn, query_cat_id, fetch_cat
 from utilities import send_otp
 import mysql.connector
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
 import random
 from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
-from db_setup import setup_database
+from db_setup import setup_database, config
 from datetime import datetime
 
 app = Flask(__name__)
@@ -225,30 +225,37 @@ def see_requests():
     return render_template('see_requests.html', requests=requests)
 
 
-
+def approved_mail(email):
+    msg = Message(' Congratulations your request has been approved, you can now receive donations', sender='Anonymous@gmail.com', recipients=[email])
+    msg.body = f'Congratulations your request has been approved, you can now receive donations 🎉🎉🎉🎉🥳🥳🎆🎆🥂🥂🎇🎇'
+    print('message :', msg)
+    mail.send(msg)
 
 
 @app.route('/approve_request/<int:request_id>', methods=['POST'])
 def approve_request(request_id):
-    if not is_user_admin(current_user.email):
-        flash('You are not authorized to approve requests.', 'danger')
-        return redirect(url_for('see_requests'))
+    # Retrieve the request and user_email from the database using request_id
+    request, user_email = get_request_by_id(request_id)
     
-    try:
-        # Check if the request with the given ID exists
-        request = request_id
-        
-        if request is not None:
-            # Update the request status to "approved" in the database
-            # status = 'approved'
-            # update_request_status(request_id, status)
-            flash('Request approved successfully!', 'success')
+    # Check if the request exists
+    if request:
+        # Check if the request is already approved (assuming 'approved' is a key in the dictionary)
+        if not request.get('approved', False):
+            # Update the request's approval status to True
+            if update_request_approval(request_id, True):
+                flash('Request approved successfully', 'success')
+                approved_mail(user_email)  # Send email notification with user_email
+                
+            else:
+                flash('An error occurred while approving the request', 'error')
         else:
-            flash('Request not found', 'danger')
-    except Exception as e:
-        flash(f'An error occurred while approving the request. {e}', 'danger')
+            flash('Request is already approved', 'warning')
+    else:
+        flash('Request not found', 'error')
     
     return redirect(url_for('see_requests'))
+
+
 
 
 
@@ -273,7 +280,7 @@ def donate():
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
-        first_time_donating = 1 if request.form.get('first_time_donating') == 'yes' else 0  # Convert 'yes' to 1, 'no' to 0
+        first_time_donating = 1 if request.form.get('first_time_donating') == 'yes' else 0  
         gender = request.form['gender']
 
         
@@ -289,15 +296,77 @@ def donate():
     return render_template('donate.html')
 
 
+
+def approved_mail_donators(email):
+    msg = Message('Thank you for your donations ❤❤❤', sender='Anonymous@gmail.com', recipients=[email])
+    msg.body = f'Thank you for your donations on speedyhelp ❤❤❤'
+    print('message :', msg)
+    mail.send(msg)
+
+
 @app.route('/start_donating', methods=['GET', 'POST'])
 def start_donating():
     all_requests = get_all_requests()
-    for request_ in all_requests:
-            request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
-    
-    print('Requests:', all_requests)
-        
-    return render_template('start_donating.html', requests=all_requests)
+    percentage_ = {}
+    balances = {}
+    print(all_requests)
+    for request in all_requests:
+        print('hhhhhhhhh', request['id'])
+        print(type(request['id']))
+        print(request['id'], 'lllllllllllllll')
+        print(type(request['id']))
+        d=query_cat_id(request['id'])
+        print('DDDDDDDDDDDDDD', d)
+        all_amount = sum(item[1] for item in d)
+        balance = request['amount'] - all_amount
+        balances[request['category_name']] = balance
+        print('balance', balance)
+        print('ammm', all_amount)
+        # calculate the percentage of the 
+        percentage = (float(all_amount)  / float(request['amount'])) * 100
+        print('percentage', percentage)
+        percentage_[request['category_name']] = percentage
+    print(percentage_, 'hhhhhhhhhhhhhhhhhhhhhhhhhhh')
+    return render_template('start_donating.html',  requests=all_requests, percentage=percentage_, balances=balances)
+
+
+
+
+
+def received(email):
+    msg = Message('You have just received an anonymous donation', sender='Anonymous@gmail.com', recipients=[email])
+    msg.body = f'You have just received an anonymous donation on speedyhelp'
+    print('message :', msg)
+    mail.send(msg)
+
+def received_admin(username):
+    msg = Message(f'{username} received an anonymous donation', sender='Anonymous@gmail.com', recipients=['admin@gmail.com'])
+    msg.body = f'You have just received an anonymous donation on speedyhelp'
+    print('message :', msg)
+    mail.send(msg)
+
+
+@app.route('/accept_donation/<email>/<cat_id>', methods=['GET', 'POST'])
+def accept_donation(email, cat_id):
+    amount_donated = request.form.get('amount_donated')
+    # if amount_donated is not None:
+    #     amount = float(amount_donated)
+    # else:
+    #     flash('Invalid amount donated', 'error')
+    #     return redirect(url_for('start_donating'))
+    amount_donated = float(request.form['amount_donated'])
+    donator_name = request.form["donator_name"]
+    donator_email = request.form["email"]
+    required_amount = float(request.form['required_amount'])
+    # Add the donation and perform other actions
+    add_donation(amount_donated, donator_name, required_amount, email, cat_id) 
+    # flash('Thank you for your donations', 'success')
+    approved_mail_donators(donator_email)
+    print('Donated')
+    received(email)
+    user = get_user(email)
+    received_admin(user.first_name)
+    return redirect(url_for('start_donating'))
 
 
 
@@ -308,18 +377,7 @@ def start_donating():
 
 
 
-# @app.route('/start_donating', methods=['GET', 'POST'])
-# def start_donating():
-#     all_requests = get_all_requests()
-    
-#     is_authenticated = current_user.is_authenticated
-#     if is_authenticated:
-#         print("User ID:", current_user.id)
-#         print('Requests:', all_requests)
 
-#     for request_ in all_requests:
-#             request_['expiry_date'] = request_['expiry_date'].strftime('%m/%d/%y')
-#     return render_template('start_donating.html',  my_requests=all_requests)
 
 if __name__ == "__main__":
     app.run(debug=True)

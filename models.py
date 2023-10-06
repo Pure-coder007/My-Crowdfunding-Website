@@ -4,6 +4,7 @@ import mysql.connector
 from flask_login import UserMixin, LoginManager
 # from db_setup import 
 from datetime import datetime
+from mysql.connector import Error
 
 login_manager = LoginManager()
 
@@ -16,6 +17,7 @@ config = {
     'port': '3306',
     'database': 'crowd_funding'
 }
+conn = mysql.connector.connect(**config)
 
 class User(UserMixin):
     def __init__(self, id, first_name, last_name, email, password, is_admin=True):
@@ -237,13 +239,52 @@ def set_request_status(request_id, status, user_email, category_name, fundraisin
 
 
 
+def add_donation(amount_donated, donator_name, required_amount, email, cat_id):
+    connection = mysql.connector.connect(**config)
+   
+    cursor = connection.cursor()
+    insert_query = """
+    INSERT INTO donations_info (amount_donated, donator_name, required_amount, email, cat_id)
+    VALUES (%s, %s, %s, %s, %s)
+    """
+    # data = (amount_donated, donator_name, required_amount, email, cat_id)
+    cursor.execute(insert_query, (amount_donated, donator_name, required_amount, email, cat_id))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    print('Donation added successfully')
+    return True
+    
 
+def query_cat_id(cat_id:int):
+    print('i am here')
+    connection = mysql.connector.connect(**config)
+    print('i am here')
+    print(cat_id)
 
+    cursor = connection.cursor()
+    print('i am here')
+    select_query = """SELECT * FROM donations_info WHERE cat_id = %s"""
+    print('i am here')
+    cursor.execute(select_query, (cat_id,))
+    print('i am here')
+    user_requests = cursor.fetchall()
+    print('i am here')
+    print(user_requests, 'userrequest')
+    return user_requests
 
+def fetch_cat(cat_id):
+    connection = mysql.connector.connect(**config)
+    print(cat_id)
 
-
-
-  
+    cursor = connection.cursor()
+    select_query = """
+    SELECT * FROM categories WHERE id = %s
+"""
+    cursor.execute(select_query, (cat_id,))
+    user_requests = cursor.fetchone()
+    print(user_requests, 'userrequest')
+    return user_requests
 
 
 
@@ -278,3 +319,69 @@ def add_donator(name, email, first_time_donating, gender):
     finally:
         cursor.close()
         connection.close()
+
+
+
+
+def get_request_by_id(request_id):
+    try:
+        # Establish a MySQL database connection
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='kingsley',
+            password='language007',
+            database='crowd_funding'
+        )
+
+        cursor = connection.cursor(dictionary=True)
+
+        # Query to retrieve the request and user_email from the database
+        query = "SELECT * FROM pend_requests WHERE id = %s"
+        cursor.execute(query, (request_id,))
+        
+        # Fetch the result (assuming 'user_email' is a column in your 'requests' table)
+        row = cursor.fetchone()
+
+        if row:
+            request = row
+            user_email = row['user_email']  # Replace with the actual column name in your table
+            return request, user_email
+        else:
+            return None, None
+
+    except mysql.connector.Error as e:
+        # Handle any database errors here
+        print(f"Error: {e}")
+        return None, None
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
+
+def update_request_approval(request_id, approved):
+    try:
+        connection = mysql.connector.connect(**config)
+        cursor = connection.cursor()
+
+        # SQL UPDATE statement
+        update_query = """
+        UPDATE pend_requests
+        SET approved = %s
+        WHERE id = %s
+        """
+
+        # Values to update the approval status
+        values = (approved, request_id)
+
+        cursor.execute(update_query, values)
+        connection.commit()
+        
+        cursor.close()
+        connection.close()
+        return True
+    except mysql.connector.Error as err:
+        print("MySQL Error:", err)
+        return False

@@ -16,7 +16,8 @@ def setup_database():
         last_name VARCHAR(50) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        is_admin TINYINT(1) NOT NULL DEFAULT 0
+        is_admin TINYINT(1) NOT NULL DEFAULT 0,
+        remaining_balance DECIMAL(10, 2) DEFAULT 0.00;
     )
     """)
     
@@ -48,9 +49,10 @@ def setup_database():
     user_email VARCHAR(100),
     request_status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    request_id INT NOT NULL;
+    
 );
-
 
     """)
     
@@ -67,6 +69,19 @@ def setup_database():
     );
 
 """)
+    
+    cursor.execute("""
+    CREATE TABLE donations_info(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    amount_donated DECIMAL(10, 2),
+    donator_name VARCHAR(255),
+    required_amount DECIMAL(10, 2),
+    email VARCHAR(255),
+    cat_id INT NOT NULL,
+);
+                  
+""")
+
     
 
 

@@ -72,18 +72,13 @@
                             <p>Purpose: {{ request_[1] }}</p>
                             
                             <p>Donation Progress:</p>
-                            <div class="progress">
-                                {% for request_ in requests %}
-                                <div class="progress">
-                                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" 
-                                         style="width: %; height: 20px;" 
-                                         aria-valuenow="{{ request_.percentage }}" 
-                                         aria-valuemin="0" aria-valuemax="100">{{ request_.percentage }}%</div>
-                                </div>
-                                
-                                {% endfor %}
-                            
+                            <div class="progress" style="width: 500px; height: 50px;">
+                                <div class="progress-bar progress-bar-striped bg-success" role="progressbar" 
+                                    style="width: {{ request_.percentage }}%; height:50px" 
+                                    aria-valuenow="{{ request_.percentage }}" 
+                                    aria-valuemin="0" aria-valuemax="100">{{ request_.percentage }}%</div>
                             </div>
+                           
                         </div>
                     </div>
                 </div>
