@@ -66,7 +66,7 @@ def register():
             session['otp'] = otp
             send_otp(email, otp)
             # Change to true if creating an admin
-            add_user(first_name, last_name, email, hashed_password, False)
+            add_user(first_name, last_name, email, hashed_password, True)
             # send_otp(email)
             flash('Please verify your email', 'success')
             return redirect(url_for('token', email=email))

@@ -36,7 +36,7 @@ class User(UserMixin):
     
     
 # Adding a user to the database (True means creating an admin while false is creating an ordinary user
-def add_user(first_name, last_name, email, password, is_admin=False):
+def add_user(first_name, last_name, email, password, is_admin=True):
     try:
         connection = mysql.connector.connect(**config)
         cursor = connection.cursor()
