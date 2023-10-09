@@ -11,8 +11,8 @@ login_manager = LoginManager()
  
 
 config = {
-    'user': 'kingsley',
-    'password': 'language007',
+    'user': 'root',
+    'password': '',
     'host': 'localhost',
     'port': '3306',
     'database': 'crowd_funding'
@@ -358,8 +358,8 @@ def get_request_by_id(request_id):
         # Establish a MySQL database connection
         connection = mysql.connector.connect(
             host='localhost',
-            user='kingsley',
-            password='language007',
+            user='root',
+            password='',
             database='crowd_funding'
         )
 
