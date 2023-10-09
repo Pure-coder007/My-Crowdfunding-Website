@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_user_requests, get_all_donations, add_donator, get_all_requests, add_request, add_donation, get_request_by_id, update_request_approval, conn, query_cat_id, fetch_cat
+from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_donated_persons, get_user_requests, donated_persons, get_all_donations, add_donator, get_all_requests, add_request, add_donation, get_request_by_id, update_request_approval, conn, query_cat_id, fetch_cat
 from utilities import send_otp
 import mysql.connector
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
@@ -8,6 +8,7 @@ from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 from db_setup import setup_database, config
 from datetime import datetime
+from werkzeug.urls import unquote
 
 app = Flask(__name__)
 
@@ -66,7 +67,7 @@ def register():
             session['otp'] = otp
             send_otp(email, otp)
             # Change to true if creating an admin
-            add_user(first_name, last_name, email, hashed_password, True)
+            add_user(first_name, last_name, email, hashed_password, False)
             # send_otp(email)
             flash('Please verify your email', 'success')
             return redirect(url_for('token', email=email))
@@ -206,8 +207,8 @@ def admin():
 
 @app.route('/see_donators')
 def see_donators():
-    pass
-    return render_template('see_donators.html')
+    data = get_donated_persons()
+    return render_template('see_donators.html', data=data)
 
 
 
@@ -303,30 +304,35 @@ def approved_mail_donators(email):
     print('message :', msg)
     mail.send(msg)
 
-
-@app.route('/start_donating', methods=['GET', 'POST'])
-def start_donating():
+@app.route('/start_donating', defaults={'id': None}, methods=['GET', 'POST'])
+@app.route('/start_donating/<int:id>', methods=['GET', 'POST'])
+def start_donating(id):
     all_requests = get_all_requests()
     percentage_ = {}
     balances = {}
     print(all_requests)
-    for request in all_requests:
-        print('hhhhhhhhh', request['id'])
-        print(type(request['id']))
-        print(request['id'], 'lllllllllllllll')
-        print(type(request['id']))
-        d=query_cat_id(request['id'])
-        print('DDDDDDDDDDDDDD', d)
+    for req in all_requests:
+        d = query_cat_id(req['id'])  
         all_amount = sum(item[1] for item in d)
-        balance = request['amount'] - all_amount
-        balances[request['category_name']] = balance
-        print('balance', balance)
-        print('ammm', all_amount)
-        # calculate the percentage of the 
-        percentage = (float(all_amount)  / float(request['amount'])) * 100
-        print('percentage', percentage)
-        percentage_[request['category_name']] = percentage
+        balance = req['amount'] - all_amount
+        balances[req['category_name']] = balance
+        percentage = (float(all_amount)  / float(req['amount'])) * 100
+        percentage_[req['category_name']] = percentage
+
+
     print(percentage_, 'hhhhhhhhhhhhhhhhhhhhhhhhhhh')
+
+    if request.method == 'POST':
+        donated_amount = float(request.form.get('amount_donated')) 
+        category_name = request.form.get('selected_category')
+        
+        if balances[category_name] == 0:
+            flash('Sorry, the donation target for this category has already been met.', 'info')
+            return redirect(url_for('start_donating'))
+
+        if donated_amount > balances[category_name]:
+            flash('The donated amount exceeds the balance!', 'error')
+            return redirect(url_for('start_donating'))
     return render_template('start_donating.html',  requests=all_requests, percentage=percentage_, balances=balances)
 
 
@@ -354,12 +360,13 @@ def accept_donation(email, cat_id):
     # else:
     #     flash('Invalid amount donated', 'error')
     #     return redirect(url_for('start_donating'))
-    amount_donated = float(request.form['amount_donated'])
+    # amount_donated = float(request.form['amount_donated'])
     donator_name = request.form["donator_name"]
     donator_email = request.form["email"]
     required_amount = float(request.form['required_amount'])
     # Add the donation and perform other actions
     add_donation(amount_donated, donator_name, required_amount, email, cat_id) 
+    donated_persons(donator_name, email, amount_donated)
     # flash('Thank you for your donations', 'success')
     approved_mail_donators(donator_email)
     print('Donated')

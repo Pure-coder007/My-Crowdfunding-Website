@@ -20,7 +20,7 @@ config = {
 conn = mysql.connector.connect(**config)
 
 class User(UserMixin):
-    def __init__(self, id, first_name, last_name, email, password, is_admin=True):
+    def __init__(self, id, first_name, last_name, email, password, is_admin=False):
         self.id = id
         self.first_name = first_name
         self.last_name = last_name
@@ -320,6 +320,25 @@ def add_donator(name, email, first_time_donating, gender):
         cursor.close()
         connection.close()
 
+
+def donated_persons(name, email, amount_donated):
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+
+    cursor.execute("INSERT INTO donated_persons (name, email, amount_donated) VALUES (%s, %s, %s)", (name, email, amount_donated))
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+
+def get_donated_persons():
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT name, email, amount_donated FROM donated_persons")
+    result = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return result
 
 
 

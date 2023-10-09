@@ -88,8 +88,39 @@
             </div>
             <!-- Nav Bar End -->
             
-            
-            
+            <div class="container" style="margin-top: 150px; position:absolute; margin-left: 100px; ">
+
+                <div >
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                </div> 
+                <h1 style="color:gold;">Donators</h1 >
+                <table class="table justify-content" style="color:white;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Amount Donated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data %}
+                            <tr>
+                                <td>{{ row["name"] }}</td>
+                                <td>{{ row["email"] }}</td>
+                                <td>${{ row["amount_donated"] }}</td>                           
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
             <!-- JavaScript Libraries -->
             <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
