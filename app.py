@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request, redirect, url_for, flash
-from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, set_request_status, get_donated_persons, get_user_requests, donated_persons, get_all_donations, add_donator, get_all_requests, add_request, add_donation, get_request_by_id, update_request_approval, conn, query_cat_id, fetch_cat
+from models import add_user, get_user, add_category, get_all_requests, User, get_user_by_id, is_user_admin, donated_people,set_request_status, get_donated_persons, get_user_requests, get_all_donations, add_donator, get_all_requests, add_request, add_donation, get_request_by_id, update_request_approval, conn, query_cat_id, fetch_cat
 from utilities import send_otp
 import mysql.connector
 from flask_login import login_user, current_user, logout_user, login_required, LoginManager
@@ -366,7 +366,8 @@ def accept_donation(email, cat_id):
     required_amount = float(request.form['required_amount'])
     # Add the donation and perform other actions
     add_donation(amount_donated, donator_name, required_amount, email, cat_id) 
-    donated_persons(donator_name, email, amount_donated)
+    # donated_persons(donator_name, email, amount_donated)
+    donated_people(donator_name, email, amount_donated)
     # flash('Thank you for your donations', 'success')
     approved_mail_donators(donator_email)
     print('Donated')
