@@ -8,9 +8,9 @@ def setup_database():
     
 
     # Users Table
-    cursor.execute('CREATE DATABASE IF NOT EXISTS crowd_funding')
+    # cursor.execute('CREATE DATABASE IF NOT EXISTS crowd_funding')
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE  users (
         id INT AUTO_INCREMENT PRIMARY KEY, 
         first_name VARCHAR(50) NOT NULL,
         last_name VARCHAR(50) NOT NULL,

@@ -10,13 +10,44 @@ login_manager = LoginManager()
 
  
 
+# config = {
+#     'user': 'root',
+#     'password': '',
+#     'host': 'localhost',
+#     'port': '3306',
+#     'database': 'crowd_funding'
+# }
+
+
+import mysql.connector
+
+
 config = {
-    'user': 'root',
-    'password': '',
-    'host': 'localhost',
-    'port': '3306',
-    'database': 'crowd_funding'
+    'user': 'softwar3900',
+    'password': '123abc456def%^&',
+    'host': 'db4free.net',
+    'database': 'fintechnewdb',
+    'raise_on_warnings': True
 }
+
+
+conn = mysql.connector.connect(**config)
+
+
+cursor = conn.cursor()
+
+
+cursor.execute("SHOW TABLES;")
+for table in cursor:
+    print(table)
+
+
+cursor.close()
+conn.close()
+
+
+
+
 conn = mysql.connector.connect(**config)
 
 class User(UserMixin):
@@ -199,26 +230,7 @@ def is_user_admin(email):
 
 
  
-# def set_request_status(request_id, status):
-#     connection = None
-#     cursor = None
-
-#     try:
-#         connection = mysql.connector.connect(**config)
-#         cursor = connection.cursor()
-#         update_query = "UPDATE approved_requests SET status = %s WHERE id = %s"
-#         cursor.execute(update_query, (status, request_id))
-#         connection.commit()
-#         # print(f"Query executed: {update_query}")
-#         return True
-#     except mysql.connector.Error as err:
-#         print("Error:", err)
-#         return False
-#     finally:
-#         if cursor:
-#             cursor.close()
-#         if connection:
-#             connection.close()
+# Getting all approved requests
 def set_request_status(request_id, status, user_email, category_name, fundraising_for, expiry_date, amount):
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
@@ -307,6 +319,7 @@ def get_all_donations():
 
 
 
+
 def add_donator(name, email, first_time_donating, gender):
     try:
         connection = mysql.connector.connect(**config)
@@ -321,14 +334,6 @@ def add_donator(name, email, first_time_donating, gender):
         connection.close()
 
 
-# def donated_persons(name, email, amount_donated):
-#     connection = mysql.connector.connect(**config)
-#     cursor = connection.cursor()
-
-#     cursor.execute("INSERT INTO donated_persons (name, email, amount_donated) VALUES (%s, %s, %s)", (name, email, amount_donated))
-#     connection.commit()
-#     cursor.close()
-#     connection.close()
 
 
 def donated_people(name, email, amount_donated, category_name, user_email):
@@ -356,12 +361,14 @@ def get_donated_persons():
 def get_request_by_id(request_id):
     try:
         # Establish a MySQL database connection
-        connection = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            password='',
-            database='crowd_funding'
-        )
+        # connection = mysql.connector.connect(
+        #     host='localhost',
+        #     user='root',
+        #     password='',
+        #     database='crowd_funding'
+        # )
+        connection = mysql.connector.connect(**config)
+
 
         cursor = connection.cursor(dictionary=True)
 
