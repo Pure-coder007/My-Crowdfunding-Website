@@ -63,7 +63,7 @@
                         <div class="col-md-6 mt-5">
                             <div class="border" style="margin-top: 100px; border-radius: 10px; width: 600px;">
                                 <div class="request-card ml-3 mr-3 mb-3 text-white" style="margin-bottom: 100px;">
-                                    <form action="{{url_for('accept_donation', email=request_.user_email, cat_id=request_.id)}}" method="POST">
+                                    <form action="{{url_for('accept_donation', email=request_.user_email, cat_id=request_.id, category_name=request_.category_name)}}" method="POST">
                                         <h3>{{ request_.title }}</h3>
                                         <p>Description: {{ request_.description }}</p>
                                         <p>Category: {{ request_.category_name }}</p>

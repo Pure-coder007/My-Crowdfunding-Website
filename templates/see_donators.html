@@ -76,9 +76,11 @@
                 <table class="table justify-content" style="color:white;">
                     <thead>
                         <tr>
-                            <th>Name</th>
+                            <th>Donator</th>
                             <th>Email</th>
                             <th>Amount Donated</th>
+                            <th>Receiver</th>
+                            <th>Category</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,6 +89,8 @@
                                 <td>{{ row["name"] }}</td>
                                 <td>{{ row["email"] }}</td>
                                 <td>${{ row["amount_donated"] }}</td>                           
+                                <td>{{ row["user_email"] }}</td>                           
+                                <td>{{ row["category_name"] }}</td>                           
                             </tr>
                         {% endfor %}
                     </tbody>

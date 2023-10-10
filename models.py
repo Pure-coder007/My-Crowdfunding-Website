@@ -331,11 +331,11 @@ def add_donator(name, email, first_time_donating, gender):
 #     connection.close()
 
 
-def donated_people(name, email, amount_donated):
+def donated_people(name, email, amount_donated, category_name, user_email):
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
 
-    cursor.execute("INSERT INTO donated_people (name, email, amount_donated) VALUES (%s, %s, %s)", (name, email, amount_donated))
+    cursor.execute("INSERT INTO donated_people (name, email, amount_donated, category_name, user_email) VALUES (%s, %s, %s, %s, %s)", (name, email, amount_donated, category_name, user_email))
     connection.commit()
     cursor.close()
     connection.close()
@@ -345,7 +345,7 @@ def donated_people(name, email, amount_donated):
 def get_donated_persons():
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT name, email, amount_donated FROM donated_people")
+    cursor.execute("SELECT name, email, amount_donated, category_name, user_email FROM donated_people")
     result = cursor.fetchall()
     cursor.close()
     connection.close()

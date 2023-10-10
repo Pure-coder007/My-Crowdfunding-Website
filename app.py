@@ -8,7 +8,8 @@ from flask_mail import Mail, Message
 from flask_bcrypt import Bcrypt
 from db_setup import setup_database, config
 from datetime import datetime
-from werkzeug.urls import unquote
+from urllib.parse import unquote
+
 
 app = Flask(__name__)
 
@@ -207,7 +208,10 @@ def admin():
 
 @app.route('/see_donators')
 def see_donators():
+    print('firrrrrrrrr')
     data = get_donated_persons()
+    print(data)
+    print('seconddddddd')
     return render_template('see_donators.html', data=data)
 
 
@@ -218,7 +222,7 @@ def see_donators():
 def see_requests():
     # Get all user requests from the database
     requests = get_all_requests()
-    
+    print('seeeeeeeeeee')
 
     print("User ID:", current_user.id)
     print('Request:', requests)
@@ -352,22 +356,22 @@ def received_admin(username):
     mail.send(msg)
 
 
-@app.route('/accept_donation/<email>/<cat_id>', methods=['GET', 'POST'])
-def accept_donation(email, cat_id):
+@app.route('/accept_donation/<email>/<cat_id>/<category_name>', methods=['GET', 'POST'])
+def accept_donation(email, cat_id, category_name):
+    print('ggggggggggggggg')
     amount_donated = request.form.get('amount_donated')
-    # if amount_donated is not None:
-    #     amount = float(amount_donated)
-    # else:
-    #     flash('Invalid amount donated', 'error')
-    #     return redirect(url_for('start_donating'))
-    # amount_donated = float(request.form['amount_donated'])
-    donator_name = request.form["donator_name"]
-    donator_email = request.form["email"]
-    required_amount = float(request.form['required_amount'])
+    donator_name = request.form.get('donator_name')
+    donator_email = request.form.get('email')
+    required_amount = request.form.get('required_amount')
+    user_email = request.form.get('user_email')
+    print('rrrrrrrrrrrrrr')
     # Add the donation and perform other actions
     add_donation(amount_donated, donator_name, required_amount, email, cat_id) 
+    print('the email:', email)
     # donated_persons(donator_name, email, amount_donated)
-    donated_people(donator_name, email, amount_donated)
+    donated_people(donator_name, donator_email, amount_donated, category_name, email)
+    print('rrrrrrrrrrrrrr')
+    print(donator_name, email, amount_donated, category_name, user_email)
     # flash('Thank you for your donations', 'success')
     approved_mail_donators(donator_email)
     print('Donated')

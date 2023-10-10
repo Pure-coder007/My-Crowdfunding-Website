@@ -13,5 +13,5 @@ MarkupSafe
 mysql-connector-python
 packaging
 protobuf
-Werkzeug
+Werkzeug==2.0.0
 WTForms
