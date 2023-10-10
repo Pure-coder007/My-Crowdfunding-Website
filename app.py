@@ -381,10 +381,11 @@ def accept_donation(email, cat_id, category_name):
     return redirect(url_for('start_donating'))
 
 
-
-
-
-
+@app.route('/donated_persons')
+def donated_persons():
+    data = get_all_donations()
+    print(data)
+    return render_template('donated_persons.html', data=data)
 
 
 
